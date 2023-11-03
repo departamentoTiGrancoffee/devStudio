@@ -35,8 +35,14 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 		try {
 			
 			sql = new NativeSql(jdbc);
-			sql.appendSql("SELECT CODPROD, DESCRPROD, nvl(MARCA,'SEM MARCA') as MARCA, REFERENCIA, CODGRUPOPROD, CODVOL FROM TGFPRO"
-					+ " where ativo='S' and usoprod in ('R','V') and REFERENCIA is not null");
+//			sql.appendSql("SELECT CODPROD, DESCRPROD, nvl(MARCA,'SEM MARCA') as MARCA, REFERENCIA, CODGRUPOPROD, CODVOL FROM TGFPRO"
+//					+ " where ativo='S' and usoprod in ('R','V') and REFERENCIA is not null");
+			sql.appendSql("SELECT CODPROD, DESCRPROD, MARCA, REFERENCIA, CODGRUPOPROD, CODVOL FROM("+
+		    "SELECT P.CODPROD,P.DESCRPROD,UPPER(NVL(I.MARCA,'SEM MARCA')) AS MARCA,NVL( "+
+			"(SELECT CODBARRA FROM TGFBAR WHERE CODVOL=P.CODVOL AND ROWNUM=1),(SELECT CODBARRA FROM TGFVOA WHERE CODVOL=P.CODVOL AND ROWNUM=1)) AS REFERENCIA,"+
+		    "P.CODGRUPOPROD,P.CODVOL FROM TGFPRO P JOIN AD_INTMARCA I ON (I.ID=P.AD_MARCA) WHERE P.ATIVO='S' AND P.USOPROD IN ('R','V')) X "+
+			"WHERE X.REFERENCIA IS NOT NULL");
+			
 			rs = sql.executeQuery();
 			while (rs.next()) {
 				DynamicVO configVO = ConfiguracaoDAO.get();
@@ -92,5 +98,7 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 			JdbcUtils.closeResultSet(rs);
 			NativeSql.releaseResources(sql);
 		}
+		
+		ctx.setMensagemRetorno("Produtos importados");
 	}
 }
