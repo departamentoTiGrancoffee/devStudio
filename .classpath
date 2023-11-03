@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/sanutil.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/jbossall-client.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/kotlin-stdlib-1.3.61.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/SankhyaW-extensions.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/mge-modelcore-3.32b143.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/sankhya-commons-3.32b143.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/jape-3.32b143.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/sanutil-3.32b143.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/SWService.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/json-20140107.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/activiti-engine-5.17.0.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/gson-2.1.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/jsoup-1.11.3.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/jdom.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/sanws-3.32b143.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/jaxb-api.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/javax.servlet.jar"/>
+	<classpathentry kind="lib" path="/Users/rafaelmontarroyos/Development/eclipse-workspace/libs/mgecom-model-4.7b421.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
