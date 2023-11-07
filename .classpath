@@ -6,27 +6,26 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/activiti-engine-5.17.0.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/commons-codec-1.3.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/commons-io-2.1.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/gson-2.1.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/jape-3.32b143.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/javax.servlet.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/jbossall-client.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/jboss-j2ee.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/jdom.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/json-20140107.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/jsoup-1.11.3.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/kotlin-stdlib-1.3.61.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/mgecom-model-4.7b421.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/mge-modelcore-3.32b143.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/sankhya-commons-3.32b143.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/SankhyaW-extensions.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/sanutil-3.32b143.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/sanws-3.32b143.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/SWService.jar"/>
-	<classpathentry kind="lib" path="D:/grancoffee-workspace/java/libs/sanutil.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/activiti-engine-5.17.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/gson-2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/jape-3.32b143.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/javax.servlet.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/jaxb-api.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/jbossall-client.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/jdom.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/json-20140107.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/jsoup-1.11.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/kotlin-stdlib-1.3.61.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/mgecom-model-4.7b421.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/mge-modelcore-3.32b143.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/sankhya-commons-3.32b143.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/SankhyaW-extensions.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/sanutil-3.32b143.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/sanws-3.32b143.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gabriel.nascimento/Documents/gc-workspace/java/devStudio/libs/SWService.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
