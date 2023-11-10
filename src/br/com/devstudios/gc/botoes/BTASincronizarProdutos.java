@@ -32,6 +32,7 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 		NativeSql sql = (NativeSql) null;
 		ResultSet rs = (ResultSet) null;
 		int cadEnv = 0;
+		String bd="";
 		try {
 			
 			sql = new NativeSql(jdbc);
@@ -41,7 +42,7 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 		    "SELECT P.CODPROD,P.DESCRPROD,UPPER(NVL(I.MARCA,'SEM MARCA')) AS MARCA,NVL( "+
 			"(SELECT CODBARRA FROM TGFBAR WHERE CODVOL=P.CODVOL AND CODPROD=P.CODPROD AND ROWNUM=1),(SELECT CODBARRA FROM TGFVOA WHERE CODVOL=P.CODVOL AND CODPROD=P.CODPROD AND ROWNUM=1)) AS REFERENCIA,"+
 		    "P.CODGRUPOPROD,P.CODVOL FROM TGFPRO P JOIN AD_INTMARCA I ON (I.ID=P.AD_MARCA) WHERE P.ATIVO='S' AND P.USOPROD IN ('R','V')) X "+
-			"WHERE X.REFERENCIA IS NOT NULL");
+			"WHERE X.REFERENCIA IS NOT NULL AND CODPROD=298");
 			
 			rs = sql.executeQuery();
 			while (rs.next()) {
@@ -88,9 +89,11 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 				
 				service.fire();
 				cadEnv++;
+				bd=bd+body.toString();
 			}
 			
-			ctx.setMensagemRetorno("Processo concluído!<br>"+cadEnv+" cadastros enviado(s)!");
+			//ctx.setMensagemRetorno("Processo concluído!<br>"+cadEnv+" cadastros enviado(s)!");
+			ctx.setMensagemRetorno(""+bd);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			ctx.mostraErro(e1.getMessage());
@@ -99,6 +102,5 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 			NativeSql.releaseResources(sql);
 		}
 		
-		ctx.setMensagemRetorno("Produtos importados");
 	}
 }
