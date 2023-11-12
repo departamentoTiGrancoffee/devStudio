@@ -85,8 +85,10 @@ public class BTASincronizarInventario implements AcaoRotinaJava {
 						rs.getString("CONTROLE")
 						
 						});
+				
 				EntityVO itemEVO = itemCopia.getValueObject();
 				DynamicVO itemVO = (DynamicVO) itemEVO;
+				
 				
 				if(!(jaCodigoDeBarras(rs.getBigDecimal("CODPROD")))) {
 					
