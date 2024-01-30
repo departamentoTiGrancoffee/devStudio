@@ -112,7 +112,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 									
 					linha.setCampo("CODUSU", ctx.getUsuarioLogado());
 					linha.setCampo("DTENVIO", TimeUtils.getNow());
-					linha.setCampo("STATUS", "1");
+					linha.setCampo("STATUS", "2");
 					
 					service.fire();
 					
@@ -121,6 +121,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 //					"<br/><b>Body:</b> "+body.toString()+
 //					"<br/><b>Resposta</b> "+service.fire());
 					ctx.setMensagemRetorno("Processo concluído!<br>"+items.length()+" itens enviado(s)!");
+					
 				}else {
 					ctx.setMensagemRetorno("Não foram encontrados itens de contagem para o filtro selecionado!");
 				}
