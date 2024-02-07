@@ -44,10 +44,10 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 				sql = new NativeSql(jdbc);
 //				sql.appendSql("SELECT CODPROD, DESCRPROD, nvl(MARCA,'SEM MARCA') as MARCA, REFERENCIA, CODGRUPOPROD, CODVOL FROM TGFPRO"
 //						+ " where ativo='S' and usoprod in ('R','V') and REFERENCIA is not null");
-				sql.appendSql("SELECT CODPROD, DESCRPROD, MARCA, REFERENCIA, CODGRUPOPROD, CODVOL FROM("+
+				sql.appendSql("SELECT CODPROD, DESCRPROD, MARCA, REFERENCIA, CODGRUPOPROD, CODVOL, USALOTEDTVAL FROM("+
 			    "SELECT P.CODPROD,P.DESCRPROD,UPPER(NVL(I.MARCA,'SEM MARCA')) AS MARCA,NVL( "+
 				"(SELECT CODBARRA FROM TGFBAR WHERE CODVOL=P.CODVOL AND CODPROD=P.CODPROD AND ROWNUM=1),(SELECT CODBARRA FROM TGFVOA WHERE CODVOL=P.CODVOL AND CODPROD=P.CODPROD AND ROWNUM=1)) AS REFERENCIA,"+
-			    "P.CODGRUPOPROD,P.CODVOL FROM TGFPRO P JOIN AD_INTMARCA I ON (I.ID=P.AD_MARCA) WHERE P.ATIVO='S' AND P.USOPROD IN ('"+usoprod+"')) X "+
+			    "P.CODGRUPOPROD,P.CODVOL, CASE WHEN P.USALOTEDTVAL='S' THEN 'true' ELSE 'false' END AS USALOTEDTVAL FROM TGFPRO P JOIN AD_INTMARCA I ON (I.ID=P.AD_MARCA) WHERE P.ATIVO='S' AND P.USOPROD IN ('"+usoprod+"')) X "+
 				"WHERE X.REFERENCIA IS NOT NULL");
 				
 				rs = sql.executeQuery();
@@ -64,6 +64,7 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 					body.put("unit_id", rs.getString("CODVOL"));
 					body.put("category_id", rs.getString("CODGRUPOPROD"));
 					body.put("active", true);
+					body.put("validate_lote", rs.getString("USALOTEDTVAL"));
 					
 					JSONArray unidadesAlternativasArray = new JSONArray();
 					
@@ -96,6 +97,8 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 					service.fire();
 					cadEnv++;
 					bd=bd+body.toString();
+					
+					System.out.println(body.toString());
 				}
 				
 			}

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,6 +26,10 @@ import br.com.sankhya.modelcore.util.DynamicEntityNames;
 import br.com.sankhya.modelcore.util.EntityFacadeFactory;
 
 public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
+	
+	/**
+	 * 01-02-2024 - Gabriel Nascimento - Alterado o método de verificação dos registros (JapeWrapper.find) pois estava trazendo apenas 200, alteramos para o NativeSql.
+	 */
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -35,19 +38,16 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 
 		Registro[] registros = ctx.getLinhas();
 		Registro linha = registros[0];
-
-		if (!(linha.getCampo("STATUS") == null)) {
-
-			if (linha.getCampo("STATUS").equals("2")) {
-				ctx.mostraErro("Inventário em andamento, não pode ser alterado!");
-				return;
-			}
-
-			if (linha.getCampo("STATUS").equals("3")) {
-				ctx.mostraErro("Inventário finalizado, não pode ser alterado!");
+		
+		String status = (String) linha.getCampo("STATUS");
+		
+		if(status!=null && !status.isEmpty()) {
+			if(!status.equals("1")) {
+				ctx.mostraErro("Inventário em andamento ou finalizado, não pode ser transmitido para o portal!");
 				return;
 			}
 		}
+
 
 		BigDecimal id = (BigDecimal) linha.getCampo("ID");
 		
@@ -55,32 +55,71 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 			
 			if (id != null) {
 				JapeWrapper DAO = JapeFactory.dao("AD_ITENSCONTAGENS");
-				Collection<DynamicVO> listaItens = DAO.find("this.ID=?", new Object[] { id });
+				//Collection<DynamicVO> listaItens = DAO.find("this.ID=?", new Object[] { id });
+				
+				JdbcWrapper jdbcWrapper = null;
+				EntityFacade dwfEntityFacade = EntityFacadeFactory.getDWFFacade();
+				jdbcWrapper = dwfEntityFacade.getJdbcWrapper();
+				ResultSet contagem;
+				NativeSql nativeSql = new NativeSql(jdbcWrapper);
+				nativeSql.resetSqlBuf();
+				nativeSql.appendSql("SELECT CODPROD, DTVAL, DTFAB, CONTROLE, QTDESTOQUE, CODEMP, CODLOCAL FROM AD_ITENSCONTAGENS WHERE ID=:ID");
+				nativeSql.setNamedParameter("ID", id);
+				contagem = nativeSql.executeQuery();
 
 				JSONArray items = new JSONArray();
-
-				for (DynamicVO i : listaItens) {
+				
+				while (contagem.next()) {
+					DynamicVO produtoVO = (DynamicVO) EntityFacadeFactory.getDWFFacade().findEntityByPrimaryKeyAsVO(DynamicEntityNames.PRODUTO, contagem.getBigDecimal("CODPROD"));
+					DynamicVO itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=?", new Object[] { id,  contagem.getBigDecimal("CODPROD")});
+					
 					JSONObject item = new JSONObject();
-					DynamicVO produtoVO = (DynamicVO) EntityFacadeFactory.getDWFFacade()
-							.findEntityByPrimaryKeyAsVO(DynamicEntityNames.PRODUTO, i.asBigDecimal("CODPROD"));
-
-					if (!existeCodigoDeBarras(i.asBigDecimal("CODPROD"))) {
-						DAO.prepareToUpdate(i).set("STATUS", "F").set("LOG", "PRODUTO SEM CODIGO DE BARRAS").update();
-					} else {
-						item.put("validation_date", i.asTimestamp("DTVAL"));
-						item.put("fabrication_date", i.asTimestamp("DTFAB"));
-						item.put("control", i.asString("CONTROLE"));
-						item.put("quantity", i.asBigDecimal("QTDESTOQUE"));
-						item.put("cost_value", getCustoProduto(i.asBigDecimal("CODPROD"), i.asBigDecimal("CODEMP")));
-						item.put("product_id", i.asBigDecimal("CODPROD"));
-						item.put("stock_location_id", i.asBigDecimal("CODLOCAL"));
+					
+					if (!existeCodigoDeBarras(contagem.getBigDecimal("CODPROD"))) {
+						DAO.prepareToUpdate(itemProdutoVO).set("STATUS", "F").set("LOG", "PRODUTO SEM CODIGO DE BARRAS").update();
+					}else {
+						item.put("validation_date", contagem.getTimestamp("DTVAL"));
+						item.put("fabrication_date", contagem.getTimestamp("DTFAB"));
+						item.put("control", contagem.getString("CONTROLE"));
+						item.put("quantity", contagem.getBigDecimal("QTDESTOQUE"));
+						item.put("cost_value", getCustoProduto(contagem.getBigDecimal("CODPROD"), contagem.getBigDecimal("CODEMP")));
+						item.put("product_id", contagem.getBigDecimal("CODPROD"));
+						item.put("stock_location_id", contagem.getBigDecimal("CODLOCAL"));
 						item.put("unit_id", produtoVO.asString("CODVOL"));
+						item.put("validate_lote", "S".equals(produtoVO.asString("USALOTEDTVAL")) ? "true" : "false");
 						
 						items.put(item);
 						
-						DAO.prepareToUpdate(i).set("STATUS", "E").set("LOG", "PRODUTO ENVIADO COM SUCESSO").update();
+						DAO.prepareToUpdate(itemProdutoVO).set("STATUS", "E").set("LOG","PRODUTO ENVIADO COM SUCESSO").update();
 					}
 				}
+				
+				JdbcUtils.closeResultSet(contagem);
+				NativeSql.releaseResources(nativeSql);
+
+				/*
+				 * for (DynamicVO i : listaItens) { JSONObject item = new JSONObject();
+				 * DynamicVO produtoVO = (DynamicVO)
+				 * EntityFacadeFactory.getDWFFacade().findEntityByPrimaryKeyAsVO(
+				 * DynamicEntityNames.PRODUTO, i.asBigDecimal("CODPROD"));
+				 * 
+				 * if (!existeCodigoDeBarras(i.asBigDecimal("CODPROD"))) {
+				 * DAO.prepareToUpdate(i).set("STATUS", "F").set("LOG",
+				 * "PRODUTO SEM CODIGO DE BARRAS").update(); } else {
+				 * item.put("validation_date", i.asTimestamp("DTVAL"));
+				 * item.put("fabrication_date", i.asTimestamp("DTFAB")); item.put("control",
+				 * i.asString("CONTROLE")); item.put("quantity", i.asBigDecimal("QTDESTOQUE"));
+				 * item.put("cost_value", getCustoProduto(i.asBigDecimal("CODPROD"),
+				 * i.asBigDecimal("CODEMP"))); item.put("product_id",
+				 * i.asBigDecimal("CODPROD")); item.put("stock_location_id",
+				 * i.asBigDecimal("CODLOCAL")); item.put("unit_id",
+				 * produtoVO.asString("CODVOL"));
+				 * 
+				 * items.put(item);
+				 * 
+				 * DAO.prepareToUpdate(i).set("STATUS", "E").set("LOG",
+				 * "PRODUTO ENVIADO COM SUCESSO").update(); } }
+				 */
 				
 				
 				if(items.length() > 0) {
