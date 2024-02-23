@@ -36,6 +36,8 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 		String bd="";
 		try {
 			
+			//408
+			
 			String param = (String) MGECoreParameter.getParameter("USOPRODAPPINV");
 			String[] listaUsoProd = param.split(",");
 			
@@ -45,7 +47,7 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 //				sql.appendSql("SELECT CODPROD, DESCRPROD, nvl(MARCA,'SEM MARCA') as MARCA, REFERENCIA, CODGRUPOPROD, CODVOL FROM TGFPRO"
 //						+ " where ativo='S' and usoprod in ('R','V') and REFERENCIA is not null");
 				sql.appendSql("SELECT CODPROD, DESCRPROD, MARCA, REFERENCIA, CODGRUPOPROD, CODVOL, USALOTEDTVAL FROM("+
-			    "SELECT P.CODPROD,P.DESCRPROD,UPPER(NVL(I.MARCA,'SEM MARCA')) AS MARCA,NVL( "+
+			    "SELECT P.CODPROD,P.DESCRPROD,UPPER(NVL(I.MARCA,'SEM MARCA')) AS MARCA,NVL("+
 				"(SELECT CODBARRA FROM TGFBAR WHERE CODVOL=P.CODVOL AND CODPROD=P.CODPROD AND ROWNUM=1),(SELECT CODBARRA FROM TGFVOA WHERE CODVOL=P.CODVOL AND CODPROD=P.CODPROD AND ROWNUM=1)) AS REFERENCIA,"+
 			    "P.CODGRUPOPROD,P.CODVOL, CASE WHEN P.USALOTEDTVAL='S' THEN 'true' ELSE 'false' END AS USALOTEDTVAL FROM TGFPRO P JOIN AD_INTMARCA I ON (I.ID=P.AD_MARCA) WHERE P.ATIVO='S' AND P.USOPROD IN ('"+usoprod+"')) X "+
 				"WHERE X.REFERENCIA IS NOT NULL");
