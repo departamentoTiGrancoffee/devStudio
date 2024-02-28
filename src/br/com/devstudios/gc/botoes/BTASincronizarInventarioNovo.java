@@ -55,7 +55,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 			
 			if (id != null) {
 				JapeWrapper DAO = JapeFactory.dao("AD_ITENSCONTAGENS");
-				//Collection<DynamicVO> listaItens = DAO.find("this.ID=?", new Object[] { id });
+				DynamicVO empresaVO = (DynamicVO) EntityFacadeFactory.getDWFFacade().findEntityByPrimaryKeyAsVO(DynamicEntityNames.EMPRESA, linha.getCampo("CODEMP"));
 				
 				JdbcWrapper jdbcWrapper = null;
 				EntityFacade dwfEntityFacade = EntityFacadeFactory.getDWFFacade();
@@ -86,7 +86,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 						item.put("product_id", contagem.getBigDecimal("CODPROD"));
 						item.put("stock_location_id", contagem.getBigDecimal("CODLOCAL"));
 						item.put("unit_id", produtoVO.asString("CODVOL"));
-						item.put("validate_lote", "S".equals(produtoVO.asString("USALOTEDTVAL")) ? "true" : "false");
+						item.put("validate_lote", verificaSeValidaLote(empresaVO.asBigDecimal("CODEMP"), contagem.getBigDecimal("CODPROD")));
 						
 						items.put(item);
 						
@@ -97,30 +97,6 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 				JdbcUtils.closeResultSet(contagem);
 				NativeSql.releaseResources(nativeSql);
 
-				/*
-				 * for (DynamicVO i : listaItens) { JSONObject item = new JSONObject();
-				 * DynamicVO produtoVO = (DynamicVO)
-				 * EntityFacadeFactory.getDWFFacade().findEntityByPrimaryKeyAsVO(
-				 * DynamicEntityNames.PRODUTO, i.asBigDecimal("CODPROD"));
-				 * 
-				 * if (!existeCodigoDeBarras(i.asBigDecimal("CODPROD"))) {
-				 * DAO.prepareToUpdate(i).set("STATUS", "F").set("LOG",
-				 * "PRODUTO SEM CODIGO DE BARRAS").update(); } else {
-				 * item.put("validation_date", i.asTimestamp("DTVAL"));
-				 * item.put("fabrication_date", i.asTimestamp("DTFAB")); item.put("control",
-				 * i.asString("CONTROLE")); item.put("quantity", i.asBigDecimal("QTDESTOQUE"));
-				 * item.put("cost_value", getCustoProduto(i.asBigDecimal("CODPROD"),
-				 * i.asBigDecimal("CODEMP"))); item.put("product_id",
-				 * i.asBigDecimal("CODPROD")); item.put("stock_location_id",
-				 * i.asBigDecimal("CODLOCAL")); item.put("unit_id",
-				 * produtoVO.asString("CODVOL"));
-				 * 
-				 * items.put(item);
-				 * 
-				 * DAO.prepareToUpdate(i).set("STATUS", "E").set("LOG",
-				 * "PRODUTO ENVIADO COM SUCESSO").update(); } }
-				 */
-				
 				
 				if(items.length() > 0) {
 					DynamicVO configVO = ConfiguracaoDAO.get();
@@ -128,9 +104,6 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					CallService service = new CallService();
 					
 					JSONObject body = new JSONObject();
-					
-					DynamicVO empresaVO = (DynamicVO) EntityFacadeFactory.getDWFFacade().findEntityByPrimaryKeyAsVO(
-							DynamicEntityNames.EMPRESA, linha.getCampo("CODEMP"));
 					
 					if(empresaVO.asString("AD_USALOTEAPPINV") == null) {
 						body.put("validate_lote", false);
@@ -195,6 +168,61 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 		NativeSql.releaseResources(nativeSql);
 		
 		return custo;
+	}
+	
+	private boolean verificaSeValidaLote(BigDecimal codemp, BigDecimal codprod) throws Exception {
+		boolean valida = false;
+		
+		JdbcWrapper jdbcWrapper = null;
+		EntityFacade dwfEntityFacade = EntityFacadeFactory.getDWFFacade();
+		jdbcWrapper = dwfEntityFacade.getJdbcWrapper();
+		ResultSet contagem;
+		NativeSql nativeSql = new NativeSql(jdbcWrapper);
+		nativeSql.resetSqlBuf();
+		
+		if(verificaSeExisteMaisDeUmaEmpresaParaOhProduto(codprod)) {
+			nativeSql.appendSql("SELECT VALIDATE_LOTE FROM AD_LOTEEMPINVENT WHERE CODPROD=:PRODUTO AND EMPLOTE=:EMPRESA");
+			nativeSql.setNamedParameter("PRODUTO", codprod);
+			nativeSql.setNamedParameter("EMPRESA", codemp);
+		}else {
+			nativeSql.appendSql("SELECT VALIDATE_LOTE FROM AD_LOTEEMPINVENT WHERE CODPROD=:PRODUTO AND ROWNUM=1");
+			nativeSql.setNamedParameter("PRODUTO", codprod);
+		}
+		
+		contagem = nativeSql.executeQuery();
+		while (contagem.next()) {
+			valida = contagem.getBoolean("VALIDATE_LOTE");
+		}
+		
+		JdbcUtils.closeResultSet(contagem);
+		NativeSql.releaseResources(nativeSql);
+		
+		return valida;
+	}
+	
+	private boolean verificaSeExisteMaisDeUmaEmpresaParaOhProduto(BigDecimal codprod) throws Exception {
+		boolean existe = false;
+		
+		JdbcWrapper jdbcWrapper = null;
+		EntityFacade dwfEntityFacade = EntityFacadeFactory.getDWFFacade();
+		jdbcWrapper = dwfEntityFacade.getJdbcWrapper();
+		ResultSet contagem;
+		NativeSql nativeSql = new NativeSql(jdbcWrapper);
+		nativeSql.resetSqlBuf();
+		nativeSql.appendSql("SELECT COUNT(*) AS QTD FROM AD_LOTEEMPINVENT WHERE CODPROD=:PRODUTO");
+		nativeSql.setNamedParameter("PRODUTO", codprod);
+		contagem = nativeSql.executeQuery();
+		while (contagem.next()) {
+			int qtd = contagem.getInt("QTD");
+			if(qtd>1) {
+				existe = true;
+			}
+		}
+		
+		JdbcUtils.closeResultSet(contagem);
+		NativeSql.releaseResources(nativeSql);
+		
+		return existe;
 	}
 
 	private boolean existeCodigoDeBarras(BigDecimal codprod) {

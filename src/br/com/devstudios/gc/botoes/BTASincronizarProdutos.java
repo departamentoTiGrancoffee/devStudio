@@ -58,7 +58,7 @@ public class BTASincronizarProdutos implements AcaoRotinaJava {
 				body.put("unit_id", rs.getString("CODVOL"));
 				body.put("category_id", rs.getString("CODGRUPOPROD"));
 				body.put("active", true);
-				body.put("validate_lote", rs.getString("USALOTEDTVAL"));
+				//body.put("validate_lote", rs.getString("USALOTEDTVAL"));
 
 				JSONArray unidadesAlternativasArray = new JSONArray();
 
