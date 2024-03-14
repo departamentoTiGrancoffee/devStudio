@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,9 +18,12 @@ import br.com.sankhya.extensions.actionbutton.AcaoRotinaJava;
 import br.com.sankhya.extensions.actionbutton.ContextoAcao;
 import br.com.sankhya.extensions.actionbutton.Registro;
 import br.com.sankhya.jape.EntityFacade;
+import br.com.sankhya.jape.bmp.PersistentLocalEntity;
 import br.com.sankhya.jape.dao.JdbcWrapper;
 import br.com.sankhya.jape.sql.NativeSql;
+import br.com.sankhya.jape.util.FinderWrapper;
 import br.com.sankhya.jape.vo.DynamicVO;
+import br.com.sankhya.jape.vo.EntityVO;
 import br.com.sankhya.jape.wrapper.JapeFactory;
 import br.com.sankhya.jape.wrapper.JapeWrapper;
 import br.com.sankhya.modelcore.util.DynamicEntityNames;
@@ -40,6 +44,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 		Registro linha = registros[0];
 		
 		String status = (String) linha.getCampo("STATUS");
+		
 		
 		if(status!=null && !status.isEmpty()) {
 			if(!status.equals("1")) {
@@ -69,11 +74,14 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 
 				JSONArray items = new JSONArray();
 				
+				
 				while (contagem.next()) {
 					DynamicVO produtoVO = (DynamicVO) EntityFacadeFactory.getDWFFacade().findEntityByPrimaryKeyAsVO(DynamicEntityNames.PRODUTO, contagem.getBigDecimal("CODPROD"));
 					DynamicVO itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=?", new Object[] { id,  contagem.getBigDecimal("CODPROD")});
 					
 					JSONObject item = new JSONObject();
+					
+					JSONObject sincProd = new JSONObject();
 					
 					if (!existeCodigoDeBarras(contagem.getBigDecimal("CODPROD"))) {
 						DAO.prepareToUpdate(itemProdutoVO).set("STATUS", "F").set("LOG", "PRODUTO SEM CODIGO DE BARRAS").update();
@@ -91,6 +99,8 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 						items.put(item);
 						
 						DAO.prepareToUpdate(itemProdutoVO).set("STATUS", "E").set("LOG","PRODUTO ENVIADO COM SUCESSO").update();
+						
+						sincronizaProds(contagem.getBigDecimal("CODPROD"));
 					}
 				}
 				
@@ -104,6 +114,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					CallService service = new CallService();
 					
 					JSONObject body = new JSONObject();
+					JSONObject upProd = new JSONObject();
 					
 					if(empresaVO.asString("AD_USALOTEAPPINV") == null) {
 						body.put("validate_lote", false);
@@ -118,6 +129,8 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					body.put("location", linha.getCampo("CODLOCAL"));
 					body.put("counting_date", TimeUtils.clearTime((Timestamp) linha.getCampo("DTCONTAGEM")).toLocalDateTime().format(FORMATTER));
 					body.put("items",items);
+					
+					
 					service.setBody(body.toString());
 					service.setMethod("POST");
 					service.setUri(uri + "/inventories");
@@ -127,6 +140,8 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					linha.setCampo("STATUS", "2");
 					
 					service.fire();
+					
+					
 					
 //					ctx.setMensagemRetorno(
 //					"<b>URL:</b> "+uri + "/inventories"+
@@ -169,6 +184,90 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 		
 		return custo;
 	}
+	
+
+	public void sincronizaProds(BigDecimal id) {
+		
+		JSONObject sincProd = new JSONObject(); 
+		
+		JdbcWrapper jdbc = null;
+		EntityFacade dwfEntityFacade = EntityFacadeFactory.getDWFFacade();
+		jdbc = dwfEntityFacade.getJdbcWrapper();
+		NativeSql sql = (NativeSql) null;
+		ResultSet rs = (ResultSet) null;
+		int cadEnv = 0;
+		String bd = "";
+		
+		
+		
+		try {
+
+			sql = new NativeSql(jdbc);
+
+			sql.appendSql("SELECT * FROM AD_PRODINVENT WHERE CODPROD = " + id);
+
+			rs = sql.executeQuery();
+			
+				DynamicVO configVO = ConfiguracaoDAO.get();
+				String uri = configVO.asString("URL");
+				CallService service = new CallService();
+
+				
+				sincProd.put("id", rs.getString("CODPROD"));
+				sincProd.put("name", rs.getString("DESCRPROD"));
+				sincProd.put("brand", rs.getString("MARCA"));
+				sincProd.put("barcode", rs.getString("REFERENCIA"));
+				sincProd.put("unit_id", rs.getString("CODVOL"));
+				sincProd.put("category_id", rs.getString("CODGRUPOPROD"));
+				sincProd.put("active", true);
+		
+
+				JSONArray unidadesAlternativasArray = new JSONArray();
+
+				String queryPk = "CODPROD=" + rs.getString("CODPROD").toString();
+				FinderWrapper f = new FinderWrapper("AD_BARINVENT", queryPk);
+
+				EntityFacade dwf = EntityFacadeFactory.getDWFFacade();
+				Collection<PersistentLocalEntity> rPLES = dwf.findByDynamicFinder(f);
+				for (PersistentLocalEntity rPLE : rPLES) {
+
+					EntityVO rEVO = rPLE.getValueObject();
+					DynamicVO rVO = (DynamicVO) rEVO;
+					JSONObject unidadeAlternativa = new JSONObject();
+
+					unidadeAlternativa.put("unit_id", rVO.asString("CODVOL"));
+					unidadeAlternativa.put("barcode", rVO.asString("CODBARRA"));
+					unidadeAlternativa.put("divide_or_multiply", rVO.asString("DIVIDEMULTIPLICA"));
+					unidadeAlternativa.put("quantity", rVO.asBigDecimal("QUANTIDADE"));
+
+					unidadesAlternativasArray.put(unidadeAlternativa);
+				}
+
+				sincProd.put("units", unidadesAlternativasArray);
+
+				service.setBody(sincProd.toString());
+
+				service.setMethod("POST");
+				service.setUri(uri + "/products");
+
+				service.fire();
+				cadEnv++;
+				bd = bd + sincProd.toString();
+
+				System.out.println(sincProd.toString());
+			
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		} finally {
+			JdbcUtils.closeResultSet(rs);
+			NativeSql.releaseResources(sql);
+		}
+
+	}
+	
+
+	
 	
 	private boolean verificaSeValidaLote(BigDecimal codemp, BigDecimal codprod) throws Exception {
 		boolean valida = false;
