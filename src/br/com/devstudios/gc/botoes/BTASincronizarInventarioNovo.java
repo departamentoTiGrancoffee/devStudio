@@ -79,8 +79,15 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					DynamicVO produtoVO = (DynamicVO) EntityFacadeFactory.getDWFFacade()
 							.findEntityByPrimaryKeyAsVO(DynamicEntityNames.PRODUTO, contagem.getBigDecimal("CODPROD"));
 					
-					DynamicVO itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=?",
-							new Object[] { id, contagem.getBigDecimal("CODPROD") });
+					String controle = contagem.getString("CONTROLE").trim();
+					DynamicVO itemProdutoVO = null;
+					
+					if(!controle.isEmpty()) {
+						itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=? AND this.CONTROLE=?", new Object[] { id, contagem.getBigDecimal("CODPROD"), controle });
+					}else {
+						itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=?", new Object[] { id, contagem.getBigDecimal("CODPROD")});
+						
+					}					
 
 					JSONObject item = new JSONObject();			
 
@@ -102,8 +109,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 
 						items.put(item);
 
-						DAO.prepareToUpdate(itemProdutoVO).set("STATUS", "E").set("LOG", "PRODUTO ENVIADO COM SUCESSO")
-								.update();
+						DAO.prepareToUpdate(itemProdutoVO).set("STATUS", "E").set("LOG", "PRODUTO ENVIADO COM SUCESSO").update();
 
 						sincronizaProds(contagem.getBigDecimal("CODPROD"));
 					}
