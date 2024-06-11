@@ -74,21 +74,21 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 				contagem = nativeSql.executeQuery();
 
 				JSONArray items = new JSONArray();
-
+				
 				while (contagem.next()) {
 					DynamicVO produtoVO = (DynamicVO) EntityFacadeFactory.getDWFFacade()
 							.findEntityByPrimaryKeyAsVO(DynamicEntityNames.PRODUTO, contagem.getBigDecimal("CODPROD"));
 					
-					String controle = contagem.getString("CONTROLE").trim();
+					
+					String controle = contagem.getString("CONTROLE");
 					DynamicVO itemProdutoVO = null;
 					
-					if(!controle.isEmpty()) {
+					if(controle != " ") {
 						itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=? AND this.CONTROLE=?", new Object[] { id, contagem.getBigDecimal("CODPROD"), controle });
 					}else {
 						itemProdutoVO = DAO.findOne("this.ID=? AND this.CODPROD=?", new Object[] { id, contagem.getBigDecimal("CODPROD")});
-						
-					}					
-
+					}
+					
 					JSONObject item = new JSONObject();			
 
 					if (!existeCodigoDeBarras(contagem.getBigDecimal("CODPROD"))) {
@@ -114,6 +114,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 						sincronizaProds(contagem.getBigDecimal("CODPROD"));
 					}
 				}
+				
 
 				JdbcUtils.closeResultSet(contagem);
 				NativeSql.releaseResources(nativeSql);
@@ -124,7 +125,6 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					CallService service = new CallService();
 
 					JSONObject body = new JSONObject();
-					//JSONObject upProd = new JSONObject();
 
 					if (empresaVO.asString("AD_USALOTEAPPINV") == null) {
 						body.put("validate_lote", false);
@@ -150,6 +150,7 @@ public class BTASincronizarInventarioNovo implements AcaoRotinaJava {
 					linha.setCampo("STATUS", "2");
 
 					service.fire();
+					//ctx.setMensagemRetorno(body.toString());
 					ctx.setMensagemRetorno("Processo concluído!<br>" + items.length() + " itens enviado(s)!");
 
 				} else {
